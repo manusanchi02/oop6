@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * 
@@ -36,7 +37,7 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      * In order to save the people followed by a user organized in groups, adopt
      * a generic-type Map:  think of what type of keys and values would best suit the requirements
      */
-
+    private Map <String, Set<U>> friends;
     /*
      * [CONSTRUCTORS]
      *
@@ -62,13 +63,17 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      *            application
      */
     public SocialNetworkUserImpl(final String name, final String surname, final String user, final int userAge) {
-        super(null, null, null, 0);
+        super(name, surname, user, userAge);
+        this.friends = new HashMap<>();
     }
 
     /*
      * 2) Define a further constructor where the age defaults to -1
      */
+    public SocialNetworkUserImpl(final String name, final String surname, final String user) {
+        super(name, surname, user, -1);
 
+    }
     /*
      * [METHODS]
      *
@@ -76,7 +81,12 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      */
     @Override
     public boolean addFollowedUser(final String circle, final U user) {
-        return false;
+        Set<U> circleF = this.friends.get(circle);
+        if (circleF == null) {
+            circleF = new HashSet<>();
+            friends.put(circle, circleF);
+        }
+        return circleF.add(user);
     }
 
     /**
@@ -86,11 +96,19 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      */
     @Override
     public Collection<U> getFollowedUsersInGroup(final String groupName) {
-        return null;
+        Collection<U> ris = this.friends.get(groupName);
+        if (ris != null) {
+            return new ArrayList<>(ris);
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public List<U> getFollowedUsers() {
-        return null;
+        Set<U> followedUsers = new TreeSet<>();
+        for (Set<U> g : friends.values()) {
+            followedUsers.addAll(g);
+        }
+        return new ArrayList<>(followedUsers);
     }
 }
